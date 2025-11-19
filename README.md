@@ -1,64 +1,66 @@
 
 # Sparkify Airflow Data Pipeline
 
-## Introduction
-Sparkify, a music streaming company, has decided to automate and monitor their data warehouse ETL pipelines using Apache Airflow. The goal is to create dynamic, high-grade data pipelines that are built from reusable tasks, can be monitored, and allow easy backfills. Moreover, data quality checks are integral to ensure the integrity of data within the data warehouse.
 
-## Project Overview
-This project involves the creation of custom operators in Airflow to stage the data, fill the data warehouse, and run checks on the data quality. The source data is in JSON format and resides in S3, which needs to be processed in Sparkify's data warehouse in Amazon Redshift.
+## 🚀 Project Overview  
+A production-style data-warehouse ETL/analytics pipeline built for the fictitious company **Sparkify**, implemented using **Apache Airflow** to orchestrate Spark jobs and monitor data quality. This project demonstrates the design and development of scalable, modular, reliable data workflows aligned to enterprise data-platform standards.
 
-## Prerequisites
-- Create an IAM User in AWS.
-- Create a Redshift cluster in the `us-west-2` region.
-- Set up connections between Airflow and AWS.
-- Set up a connection between Airflow and the AWS Redshift Cluster.
+## 🧩 Objectives  
+- Automate ingestion, transformation and loading of raw JSON music-streaming data into a data warehouse.  
+- Orchestrate all pipeline tasks via Airflow DAGs with retry logic, scheduling, monitoring and back-fill capability.  
+- Implement data-quality checks to ensure integrity, completeness and reliability of analytic data.  
+- Use a star-schema warehouse model (fact + dimension tables) for downstream analytics.
 
-## Datasets
-The datasets are provided in two S3 buckets:
-- Log data: `s3://udacity-dend/log_data`
-- Song data: `s3://udacity-dend/song_data`
+## 🔧 Architecture & Tech Stack  
+| Component | Purpose |
+|-----------|---------|
+| **Airflow** | DAG orchestration: schedule, monitor and retry workflow tasks. |
+| **Spark / PySpark** | Distributed data processing: transform JSON logs and song metadata efficiently. |
+| **Amazon S3** | Storage for raw source data and intermediate artifacts. |
+| **Amazon Redshift** | Data warehouse platform for analytics-ready tables (fact/dimension). |
+| **Custom Operators** | Reusable Airflow operators for staging, loading, transforming and data-quality tasks. |
 
-## Project Template
-The project template includes:
-- A DAG template with all imports and task templates.
-- Operator templates within the `operators` folder.
-- A helper class for SQL transformations.
+## 📁 Key Components  
+- `dags/` – Contains the main DAG definition, with task dependencies and parameters for scheduling, retries and back-fills.  
+- `plugins/operators/` – Custom Airflow operators:  
+  - **StageOperator**: load raw JSON from S3 into Redshift staging tables.  
+  - **FactOperator / DimensionOperator**: load data into final schema tables – supports truncate/insert (dimensions) and append (fact) patterns.  
+  - **DataQualityOperator**: run data-quality checks (e.g., non-null columns) and fail the job if conditions are not met.  
+- `CREATE_TABLES.py` – SQL definitions for fact + dimension tables and staging structures in Redshift.
 
-## Configuring the DAG
-The DAG is configured with the following parameters:
-- No dependencies on past runs.
-- On failure, tasks are retried 3 times.
-- Retries happen every 5 minutes.
-- Catchup is turned off.
-- No email notifications on retry.
+## ⏱ Running the Pipeline  
+1. Set up your AWS credentials and IAM user with appropriate access.  
+2. Launch a Redshift cluster (region: `us-west-2`).  
+3. Configure Airflow connections:  
+   - AWS default connection for S3/Redshift access.  
+   - Redshift connection for queries and table loads.  
+4. Place raw datasets in S3:  
+   - `s3://udacity-dend/log_data` (user activity logs)  
+   - `s3://udacity-dend/song_data` (song metadata)  
+5. Trigger the DAG in Airflow:  
+   - The pipeline will perform data staging → loading into final warehouse schema → run data-quality checks → make data available for analytics.
 
-Task dependencies are set to follow the logical flow of the data pipeline.
+## ✅ Project Highlights  
+- Built robust DAG logic: **no past run dependencies**, **3 retry attempts**, **5-minute retry delays**, and catch-up disabled.  
+- Orchestrated complex workflows with clear dependencies and monitoring.  
+- Ensured data quality by implementing automated checks (e.g., ensure no `NULL` values in key columns).  
+- Designed a star-schema warehouse: `songplays` (fact) + `users`, `songs`, `artists`, `time` (dimensions).  
+- Demonstrated engineering best-practices: modular code, parameterised configs, error handling, monitoring via Airflow UI.
 
-## Building the Operators
-### Stage Operator
-Loads JSON formatted files from S3 to Redshift. It uses a templated field to load timestamped files from S3.
+## 📊 Why This Matters for Enterprise Data Platforms  
+This project aligns strongly with real-world data-platform requirements:  
+- Orchestration and scheduling using Airflow.  
+- Scalable data processing using Spark/PySpark.  
+- Cloud storage and compute (S3 + Redshift).  
+- ETL architecture built for analytics with a star schema.  
+- Monitoring, alerting and data-quality enforcement, integral to production-grade systems.
 
-### Fact and Dimension Operators
-Utilize the provided SQL helper class to run data transformations. Supports both the truncate-insert pattern for dimension tables and append functionality for fact tables.
+## 👥 Author  
+**Yin Li** — Data Engineer with a strong focus on cloud-based pipelines, orchestration, and analytics engineering.
 
-### Data Quality Operator
-1. Runs checks on the data, such as verifying if certain columns contain NULL values. Raises an exception if the checks fail.
-2. As there are still some NULL values in tables, running the code below in redshift cluster with the query editor untill there is no NULL values and data quality check passed.
--  ``` DELETE FROM public."time" WHERE start_time IS NULL;```
--  ``` DELETE FROM public.artists WHERE name IS NULL;```
--  ``` DELETE FROM public.songs WHERE title IS NULL;```
--  ``` DELETE FROM public.users WHERE first_name IS NULL;```
--  ``` DELETE FROM public.songplays WHERE start_time IS NULL;```
+## 📚 Acknowledgements  
+- Course-materials and templates from Udacity.  
+- Inspiration from the Sparkify team and real-world data-platform use-cases.
 
-
-## Authors
-- [Yin Li]
-
-## Acknowledgements
-- Udacity for providing the project template and guidelines.
-- The Sparkify team for their support and collaboration.
-
-
-```python
 
 ```
